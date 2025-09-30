@@ -11,9 +11,8 @@
 
     <groupId>com.gm</groupId>
     <artifactId>Graduation-IM</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>Graduation-IM</name>
-    <description>Graduation-IM</description>
+    <version>1.0.0</version>
+
     <packaging>pom</packaging>
 
     <modules>
@@ -23,10 +22,22 @@
     </modules>
 
     <properties>
-        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.111.Final</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
