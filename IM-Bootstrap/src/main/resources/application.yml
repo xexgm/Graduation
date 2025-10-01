@@ -1,23 +1,49 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/your_database?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
-    username: your_username
-    password: your_password
+    url: jdbc:mysql://127.0.0.1:3306/graduation_im?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
 
-  # Redis配置
-  redis:
-    host: 127.0.0.1
-    port: 6379
-    password: # 如果Redis设置了密码，在这里配置
-    database: 0
-    timeout: 3000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-        max-wait: -1ms
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+
+  data:
+    # Redis配置
+    redis:
+      host: localhost
+      port: 6379
+      password: "" # 如果Redis设置了密码，在这里配置
+      database: 0
+      # 连接超时时间配置
+      connect-timeout: 3000ms
+      # 命令超时时间配置
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+        # 关闭超时时间
+        shutdown-timeout: 100ms
+
+# 服务器配置
+server:
+  port: 8080
+
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
 
 # JWT配置
 jwt:
@@ -28,3 +54,9 @@ jwt:
 app:
   security:
     password-strength: 8 # 最小密码长度
+
+# 日志配置
+logging:
+  level:
+    com.gm.imbootstrap: INFO
+    org.springframework.data.redis: DEBUG

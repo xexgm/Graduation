@@ -1,5 +1,7 @@
 package com.gm.imbootstrap.service;
 
+import java.time.LocalDateTime;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gm.graduation.common.domain.User;
 import com.gm.imbootstrap.mapper.UserMapper;
@@ -68,8 +70,8 @@ public class UserService {
 
         // 4. 设置默认值
         userToRegister.setUsername(username.trim());
-        userToRegister.setCreateTime(System.currentTimeMillis());
-        userToRegister.setUpdateTime(System.currentTimeMillis());
+        userToRegister.setCreateTime(LocalDateTime.now());
+        userToRegister.setUpdateTime(LocalDateTime.now());
         userToRegister.setStatus(1); // 1表示正常状态
 
         // 设置默认昵称
@@ -261,7 +263,7 @@ public class UserService {
 
         // 4. 更新密码
         user.setPassword(encodedNewPassword);
-        user.setUpdateTime(System.currentTimeMillis());
+        user.setUpdateTime(LocalDateTime.now());
         userMapper.updateById(user);
 
         // 5. 强制下线，要求重新登录

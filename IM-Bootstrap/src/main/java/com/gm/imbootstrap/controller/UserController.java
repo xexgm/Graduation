@@ -3,6 +3,7 @@ package com.gm.imbootstrap.controller;
 import com.gm.graduation.common.domain.User;
 import com.gm.imbootstrap.dto.ApiResponse;
 import com.gm.imbootstrap.dto.ChangePasswordRequest;
+import com.gm.imbootstrap.dto.LoginRequest;
 import com.gm.imbootstrap.dto.LoginResponse;
 import com.gm.imbootstrap.dto.TokenRequest;
 import com.gm.imbootstrap.service.UserService;
@@ -10,7 +11,12 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author: xexgm
@@ -45,14 +51,7 @@ public class UserController {
         }
     }
 
-    /**
-     * 用于接收登录请求的DTO
-     */
-    @Data
-    public static class LoginRequest {
-        private String username;
-        private String password;
-    }
+
 
     /**
      * 用户登录接口
@@ -182,12 +181,5 @@ public class UserController {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
-
-
-
-
-
-
-
 
 }
