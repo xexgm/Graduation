@@ -1,4 +1,4 @@
-package com.gm.imbootstrap.dto;
+package com.gm.imbootstrap.dto.user;
 
 import lombok.Data;
 

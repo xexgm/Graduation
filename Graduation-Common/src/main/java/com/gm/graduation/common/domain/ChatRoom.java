@@ -1,5 +1,8 @@
 package com.gm.graduation.common.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.gm.graduation.common.enums.ChatRoomStatusEnum;
 import com.gm.graduation.common.enums.ChatRoomTypeEnum;
 import lombok.Data;
@@ -9,11 +12,13 @@ import lombok.Data;
  * @date: 2025/9/30
  */
 @Data
+@TableName("graduation_chat_room")
 public class ChatRoom {
 
     /**
      * 聊天室id
      */
+    @TableId(type = IdType.AUTO)
     Long roomId;
 
     /**

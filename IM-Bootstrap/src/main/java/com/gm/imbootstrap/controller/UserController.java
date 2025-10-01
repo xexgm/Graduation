@@ -2,9 +2,9 @@ package com.gm.imbootstrap.controller;
 
 import com.gm.graduation.common.domain.User;
 import com.gm.imbootstrap.dto.ApiResponse;
-import com.gm.imbootstrap.dto.ChangePasswordRequest;
-import com.gm.imbootstrap.dto.LoginRequest;
-import com.gm.imbootstrap.dto.LoginResponse;
+import com.gm.imbootstrap.dto.user.ChangePasswordRequest;
+import com.gm.imbootstrap.dto.user.LoginRequest;
+import com.gm.imbootstrap.dto.user.LoginResponse;
 import com.gm.imbootstrap.dto.TokenRequest;
 import com.gm.imbootstrap.service.UserService;
 import lombok.Data;
