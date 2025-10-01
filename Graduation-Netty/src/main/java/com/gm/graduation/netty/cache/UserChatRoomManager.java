@@ -18,12 +18,6 @@ public class UserChatRoomManager {
     /** chatRoom -> Set<User> **/
     private static ConcurrentHashMap<Long, Set<Long>> chatRoom2User = new ConcurrentHashMap<>();
 
-    /** user -> channel **/
-    private static ConcurrentHashMap<Long, ChannelHandlerContext> user2Channel = new ConcurrentHashMap<>();
-
-    /** 定义channel的attributeKey **/
-    private static final AttributeKey<Long> USER_ID_KEY = AttributeKey.valueOf("userId");
-
     /** 用户加入聊天室 **/
     public static boolean addChatRoomUser(Long roomId, Long userId) {
         return chatRoom2User.computeIfAbsent(roomId, k -> new HashSet<>()).add(userId);
@@ -41,24 +35,5 @@ public class UserChatRoomManager {
             .orElse(false);
     }
 
-    /** 添加 user -> channelCtx **/
-    public static void addUserChannel(Long userId, ChannelHandlerContext channelHandlerContext) {
-        if (userId == null || channelHandlerContext == null) {
-            return;
-        }
 
-        user2Channel.put(userId, channelHandlerContext);
-    }
-
-    /** 删除 user -> channelCtx **/
-    public static void removeUserChannel(Long userId) {
-        if (userId != null) {
-            user2Channel.remove(userId);
-        }
-    }
-
-    /** 获取 user -> channelCtx **/
-    public static ChannelHandlerContext getUserChannelCtx(Long userId) {
-        return user2Channel.get(userId);
-    }
 }
