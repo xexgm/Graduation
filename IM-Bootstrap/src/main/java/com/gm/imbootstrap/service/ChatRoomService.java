@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -52,7 +53,7 @@ public class ChatRoomService {
         room.setDescription(description);
         room.setOwnerId(operatorUserId);
         room.setRoomType(roomType == null ? ChatRoomTypeEnum.PUBLIC_ROOM : roomType);
-        room.setCreateTimeStamp(System.currentTimeMillis());
+        room.setCreateTime(LocalDateTime.now());
         room.setStatus(ChatRoomStatusEnum.ACTIVE);
 
         chatRoomMapper.insert(room);

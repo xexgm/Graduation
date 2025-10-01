@@ -93,8 +93,12 @@ public class TokenService {
 
             // 检查Token是否在Redis中存在
             String tokenUserKey = USER_PREFIX + token;
-            Long userId = (Long) redisTemplate.opsForValue().get(tokenUserKey);
-            
+            Object userIdObj = redisTemplate.opsForValue().get(tokenUserKey);
+            Long userId = null;
+            if (userIdObj instanceof Number) {
+                userId = ((Number) userIdObj).longValue();
+            }
+
             if (userId == null) {
                 log.warn("Token在Redis中不存在或已过期");
                 return false;

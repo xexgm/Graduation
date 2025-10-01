@@ -1,5 +1,6 @@
 package com.gm.graduation.common.domain;
 
+import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -44,7 +45,7 @@ public class ChatRoom {
     /**
      * 聊天室创建时间
      */
-    Long createTimeStamp;
+    LocalDateTime createTime;
 
     /**
      * 聊天室状态
