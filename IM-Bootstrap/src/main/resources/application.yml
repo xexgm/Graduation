@@ -4,3 +4,27 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/your_database?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     username: your_username
     password: your_password
+
+  # Redis配置
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: # 如果Redis设置了密码，在这里配置
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+# JWT配置
+jwt:
+  secret: mySecretKey123456789abcdefghijklmnopqrstuvwxyz # 请在生产环境中使用更安全的密钥
+  expiration: 604800000 # 7天，单位：毫秒
+
+# 应用配置
+app:
+  security:
+    password-strength: 8 # 最小密码长度
