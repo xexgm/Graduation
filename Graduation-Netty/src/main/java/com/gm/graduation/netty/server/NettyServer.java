@@ -1,7 +1,6 @@
 package com.gm.graduation.netty.server;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.gm.graduation.common.config.LifeCycle;
 import com.gm.graduation.common.utils.NettyConfig;
 import com.gm.graduation.common.utils.SystemUtil;

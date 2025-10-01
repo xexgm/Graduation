@@ -1,20 +1,23 @@
 package com.gm.graduation.common.domain;
 
+import lombok.Data;
+
 /**
  * @author: xexgm
  * @date: 2025/9/29
  */
+@Data
 public class CompleteMessage {
 
     /**
      * 业务线id
      */
-    int appId;
+    Integer appId;
 
     /**
      * 用户id
      */
-    long uid;
+    Long uid;
 
     /**
      * 用户 token
@@ -24,23 +27,31 @@ public class CompleteMessage {
     /**
      * 是否压缩
      */
-    int compression;
+    Integer compression;
 
     /**
      * 是否加密
      */
-    int encryption;
+    Integer encryption;
 
     /**
      * 消息类型
      */
-    int messageType;
+    Integer messageType;
 
+    /**
+     * 接收方id
+     */
+    Long toId;
 
-    long toId;
-
+    /**
+     * 消息内容
+     */
     String content;
 
-    long timeStamp;
+    /**
+     * 发送时间戳
+     */
+    Long timeStamp;
 
 }
