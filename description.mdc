@@ -1,0 +1,13 @@
+# 关于当前这个项目 Graduation
+
+目前这是一个基于Netty的聊天室后端服务
+
+Graduation-Common：是项目里存放一些共有配置或实体的模块
+Graduation-Netty：是Netty的启动模块，以及Netty接收到对应的消息后，进行处理的一些handler的类与实现
+IM-Bootstrap：是当前项目的启动模块，启动SpringBoot服务，同时启动Netty服务。SpringBoot服务负责监听一些平台的接口，比如聊天室的相关接口，用户登录相关接口
+
+当前项目我希望的是，用户通过前端进行登录，登录的同时，向本项目的Netty服务器发起连接（应该是前端通过Netty相关的SDK进行连接？），连接成功后，向Netty发送一条消息，用来表示发起连接
+Netty处理用户连接的消息的处理器逻辑在Graduation-Netty/src/main/java/com/gm/graduation/netty/processor/LinkProcessor.java文件中，当前端向Netty发起连接成功后，同时发送一条消息，Netty接收到这条消息后，会本地缓存用户的channel
+
+请你帮我梳理完善这个项目的连接交互过程和逻辑，我需要修改好前端
+

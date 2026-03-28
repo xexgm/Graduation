@@ -6,15 +6,36 @@
 
 ## 2. 建立连接
 
+完整的连接建立流程分为**两步**，客户端必须严格按照以下顺序执行：
+
+### 2.1 建立底层的 WebSocket 连接
 客户端通过标准的 WebSocket 协议连接到 Netty 服务端。
 
+- **Netty 监听端口**: `9999`
+- **SpringBoot 监听端口**: `8080` (用于处理 RESTful API，如登录获取 token 等)
 - **连接 URL**:
   ```
-  ws://<your-server-host>:<port>/ws?token=<user-token>
+  ws://<your-server-host>:9999/ws?token=<user-token>
   ```
 - **参数说明**:
-  - `<your-server-host>:<port>`: Netty 服务端的地址和端口。
-  - `token`: 必需参数。用户登录后获取的身份令牌，用于在建立连接时进行身份验证。如果 `token` 无效或缺失，连接将被拒绝。
+  - `<your-server-host>:9999`: Netty 服务端的地址和端口（固定为 `9999`）。
+  - `token`: 必需参数。用户登录（通过调用 `8080` 端口的 API）后获取的身份令牌，用于在建立连接时进行身份验证。如果 `token` 无效或缺失，连接将被拒绝。
+
+### 2.2 发送应用层建连消息 (非常重要！！！)
+**仅仅建立 WebSocket 底层连接是不够的！** 在 WebSocket 的 `onopen` 回调触发后，客户端**必须立即发送一条 `messageType=0` 的应用层建连消息**给服务端。
+服务端只有在收到这条消息后，才会真正把当前用户的 `channel` 缓存到内存中（对应后端 `LinkProcessor.java` 中的 `establishConnection` 逻辑）。如果不发这条消息，服务端将无法向该用户推送后续的任何消息！
+
+**必须发送的 JSON 结构示例：**
+```json
+{
+  "appId": 0,
+  "uid": 12345,
+  "token": "你的token字符串",
+  "messageType": 0,
+  "content": "请求建立连接",
+  "timeStamp": 1678886400000
+}
+```
 
 ## 3. 消息格式
 
@@ -58,9 +79,71 @@
 
 ### 5.1 Link 业务 (`appId: 0`)
 
-#### 5.1.1 心跳 (Heartbeat)
+#### 5.1.1 建立连接 (Establish Connection)
 
-- **`messageType`**: `3`
+- **`messageType`**: `0`
+- **描述**: 用于客户端在WebSocket建立连接后，向服务端注册并绑定`userId`与`channel`。
+- **方向**: 客户端 -> 服务端
+
+**请求消息**:
+```json
+{
+  "appId": 0,
+  "uid": 12345,
+  "token": "user-token-string",
+  "messageType": 0,
+  "content": "请求建立连接",
+  "timeStamp": 1678886400000
+}
+```
+
+- **方向**: 服务端 -> 客户端
+
+**响应消息 (`连接建立成功`)**:
+```json
+{
+  "appId": 0,
+  "uid": 12345,
+  "messageType": 0,
+  "content": "连接建立成功",
+  "timeStamp": 1678886400001
+}
+```
+
+#### 5.1.2 断开连接 (Disconnect)
+
+- **`messageType`**: `1`
+- **描述**: 用于客户端主动向服务端发送断开连接通知。
+- **方向**: 客户端 -> 服务端
+
+**请求消息**:
+```json
+{
+  "appId": 0,
+  "uid": 12345,
+  "token": "user-token-string",
+  "messageType": 1,
+  "content": "请求断开连接",
+  "timeStamp": 1678886400000
+}
+```
+
+- **方向**: 服务端 -> 客户端
+
+**响应消息 (`连接已断开`)**:
+```json
+{
+  "appId": 0,
+  "uid": 12345,
+  "messageType": 1,
+  "content": "连接已断开",
+  "timeStamp": 1678886400001
+}
+```
+
+#### 5.1.3 心跳 (Heartbeat)
+
+- **`messageType`**: `2`
 - **描述**: 用于客户端和服务器之间维持长连接。
 - **方向**: 客户端 -> 服务端
 
@@ -70,7 +153,7 @@
   "appId": 0,
   "uid": 12345,
   "token": "user-token-string",
-  "messageType": 3,
+  "messageType": 2,
   "content": "ping",
   "timeStamp": 1678886400000
 }
@@ -82,7 +165,8 @@
 ```json
 {
   "appId": 0,
-  "messageType": 3,
+  "uid": 12345,
+  "messageType": 2,
   "content": "pong",
   "timeStamp": 1678886400001
 }
@@ -112,10 +196,25 @@
 }
 ```
 
+- **方向**: 服务端 -> 客户端
+- **说明**: 发送成功后，服务端会返回一条确认消息。
+
+**响应消息 (`成功进入聊天室`)**:
+```json
+{
+  "appId": 1,
+  "uid": 12345,
+  "messageType": 0,
+  "toId": 1001,
+  "content": "成功进入聊天室: 1001",
+  "timeStamp": 1678886400000
+}
+```
+
 #### 5.2.2 发送聊天室消息 (Send Chat Room Message)
 
 - **`messageType`**: `1`
-- **描述**: 用户在指定的聊天室中发送一条消息。
+- **描述**: 用户在指定的聊天室中发送一条消息。**注意：服务端在广播此消息时，会排除发送者本人。发送者无需接收自己发出的消息回显。**
 - **方向**: 客户端 -> 服务端
 
 **请求消息**:
@@ -126,6 +225,21 @@
   "appId": 1,
   "uid": 12345,
   "token": "user-token-string",
+  "messageType": 1,
+  "toId": 1001,
+  "content": "大家好！",
+  "timeStamp": 1678886400000
+}
+```
+
+- **方向**: 服务端 -> 聊天室内的其他客户端
+- **说明**: 聊天室内的其他用户将收到此消息（发送者本人不会收到）。
+
+**接收消息 (`聊天室其他用户收到`)**:
+```json
+{
+  "appId": 1,
+  "uid": 12345,
   "messageType": 1,
   "toId": 1001,
   "content": "大家好！",
@@ -149,6 +263,21 @@
   "messageType": 2,
   "toId": 1001,
   "content": null,
+  "timeStamp": 1678886400000
+}
+```
+
+- **方向**: 服务端 -> 客户端
+- **说明**: 退出成功后，服务端会返回一条确认消息。
+
+**响应消息 (`成功退出聊天室`)**:
+```json
+{
+  "appId": 1,
+  "uid": 12345,
+  "messageType": 2,
+  "toId": 1001,
+  "content": "成功退出聊天室: 1001",
   "timeStamp": 1678886400000
 }
 ```

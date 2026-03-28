@@ -80,8 +80,8 @@ public class NettyServer implements LifeCycle {
                         .addLast(new HttpServerCodec())
                         // http消息的多个部分聚合为一个完整的 http 请求
                         .addLast(new HttpObjectAggregator(65536))
-                        // websocket 协议处理器
-                        .addLast(new WebSocketServerProtocolHandler("/ws"))
+                        // websocket 协议处理器，true表示checkStartsWith，允许URL带参数(如 /ws?token=xxx)
+                        .addLast(new WebSocketServerProtocolHandler("/ws", null, true, 65536, false, true))
                         // 解码器
                         .addLast(new WebSocketFrameToMessageDecoder())
                         // 编码器

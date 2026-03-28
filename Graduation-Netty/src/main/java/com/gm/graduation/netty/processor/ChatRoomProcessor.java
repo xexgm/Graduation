@@ -108,6 +108,11 @@ public class ChatRoomProcessor extends AbstractMessageProcessor<CompleteMessage>
         // 向聊天室中的每个用户发送消息
         int successCount = 0;
         for (Long userId : userSet) {
+            // 排除发送者自己
+            if (userId.equals(senderId)) {
+                continue;
+            }
+
             ChannelHandlerContext userCtx = UserLinkManager.getUserChannelCtx(userId);
             if (userCtx != null && userCtx.channel().isActive()) {
                 try {

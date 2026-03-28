@@ -214,7 +214,17 @@ public class TokenService {
         try {
             // 获取用户ID
             String tokenUserKey = USER_PREFIX + token;
-            Long userId = (Long) redisTemplate.opsForValue().get(tokenUserKey);
+            Object userIdObj = redisTemplate.opsForValue().get(tokenUserKey);
+            Long userId = null;
+            if (userIdObj instanceof Number) {
+                userId = ((Number) userIdObj).longValue();
+            } else if (userIdObj instanceof String) {
+                try {
+                    userId = Long.parseLong((String) userIdObj);
+                } catch (NumberFormatException e) {
+                    log.error("无法将Redis中的值转换为Long: {}", userIdObj);
+                }
+            }
 
             // 删除两个键
             if (userId != null) {

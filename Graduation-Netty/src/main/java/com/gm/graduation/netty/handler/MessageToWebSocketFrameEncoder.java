@@ -5,17 +5,17 @@ import java.util.List;
 import com.gm.graduation.common.domain.CompleteMessage;
 import com.gm.graduation.common.utils.JsonUtil;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 
 /**
  * @author: xexgm
  * @date: 2025/9/30
  */
-public class MessageToWebSocketFrameEncoder extends MessageToMessageDecoder<CompleteMessage> {
+public class MessageToWebSocketFrameEncoder extends MessageToMessageEncoder<CompleteMessage> {
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, CompleteMessage completeMessage, List<Object> out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, CompleteMessage completeMessage, List<Object> out) throws Exception {
         if (completeMessage == null) {
             return;
         }

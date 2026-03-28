@@ -11,6 +11,7 @@ public class ProcessorFactory {
 
     public static AbstractMessageProcessor<CompleteMessage> getProcessor(AppEnum app) {
         return switch (app) {
+            case LINK -> LinkProcessor.getInstance();
             case CHAT_ROOM -> ChatRoomProcessor.getInstance();
             default -> throw new IllegalArgumentException("不支持的消息类型");
         };

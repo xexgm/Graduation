@@ -110,4 +110,18 @@ public class ChatRoomController {
             return ResponseEntity.badRequest().body(ApiResponse.error("查询失败"));
         }
     }
+
+    /** 获取指定聊天室在线人数 */
+    @GetMapping("/{roomId}/count")
+    public ResponseEntity<ApiResponse<Integer>> getChatRoomUserCount(@PathVariable Long roomId) {
+        try {
+            int count = chatRoomService.getChatRoomUserCount(roomId);
+            return ResponseEntity.ok(ApiResponse.success("查询成功", count));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("获取聊天室人数失败: roomId={}, error={}", roomId, e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error("查询失败: " + e.getMessage()));
+        }
+    }
 }

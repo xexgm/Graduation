@@ -261,12 +261,12 @@ interface CompleteMessage {
 
 ---
 
-### 🔗 连接管理 (appId=1)
+### 🔗 连接管理 (appId=0)
 
 #### 2.1 建立连接 (messageType=0)
 ```typescript
 const connectMessage: CompleteMessage = {
-  appId: 1,
+  appId: 0,
   uid: 123,
   token: "eyJhbGciOiJIUzUxMiJ9...",
   messageType: 0,
@@ -280,10 +280,60 @@ websocket.send(JSON.stringify(connectMessage));
 
 // 响应
 {
-  "appId": 1,
+  "appId": 0,
   "uid": 123,
   "messageType": 0,
   "content": "连接建立成功",
+  "timeStamp": 1633536000000
+}
+```
+
+#### 2.2 断开连接 (messageType=1)
+```typescript
+const disconnectMessage: CompleteMessage = {
+  appId: 0,
+  uid: 123,
+  token: "eyJhbGciOiJIUzUxMiJ9...",
+  messageType: 1,
+  toId: 0,
+  content: "",
+  timeStamp: Date.now()
+};
+
+// 发送
+websocket.send(JSON.stringify(disconnectMessage));
+
+// 响应
+{
+  "appId": 0,
+  "uid": 123,
+  "messageType": 1,
+  "content": "连接已断开",
+  "timeStamp": 1633536000000
+}
+```
+
+#### 2.3 心跳保活 (messageType=2)
+```typescript
+const heartbeatMessage: CompleteMessage = {
+  appId: 0,
+  uid: 123,
+  token: "eyJhbGciOiJIUzUxMiJ9...",
+  messageType: 2,
+  toId: 0,
+  content: "ping",
+  timeStamp: Date.now()
+};
+
+// 发送 (建议每30秒发送一次)
+websocket.send(JSON.stringify(heartbeatMessage));
+
+// 响应
+{
+  "appId": 0,
+  "uid": 123,
+  "messageType": 2,
+  "content": "pong",
   "timeStamp": 1633536000000
 }
 ```
@@ -327,12 +377,12 @@ const heartbeatMessage: CompleteMessage = {
 
 ---
 
-### 💬 聊天室管理 (appId=2)
+### 💬 聊天室管理 (appId=1)
 
 #### 2.4 进入聊天室 (messageType=0)
 ```typescript
 const joinRoomMessage: CompleteMessage = {
-  appId: 2,
+  appId: 1,
   uid: 123,
   token: "eyJhbGciOiJIUzUxMiJ9...",
   messageType: 0,
@@ -343,7 +393,7 @@ const joinRoomMessage: CompleteMessage = {
 
 // 响应
 {
-  "appId": 2,
+  "appId": 1,
   "uid": 123,
   "messageType": 0,
   "toId": 1001,
@@ -355,7 +405,7 @@ const joinRoomMessage: CompleteMessage = {
 #### 2.5 发送聊天室消息 (messageType=1)
 ```typescript
 const chatMessage: CompleteMessage = {
-  appId: 2,
+  appId: 1,
   uid: 123,
   token: "eyJhbGciOiJIUzUxMiJ9...",
   messageType: 1,
@@ -370,7 +420,7 @@ const chatMessage: CompleteMessage = {
 #### 2.6 退出聊天室 (messageType=2)
 ```typescript
 const leaveRoomMessage: CompleteMessage = {
-  appId: 2,
+  appId: 1,
   uid: 123,
   token: "eyJhbGciOiJIUzUxMiJ9...",
   messageType: 2,
@@ -381,7 +431,7 @@ const leaveRoomMessage: CompleteMessage = {
 
 // 响应
 {
-  "appId": 2,
+  "appId": 1,
   "uid": 123,
   "messageType": 2,
   "toId": 1001,
@@ -592,7 +642,7 @@ class WebSocketClient {
   // 发送建连消息
   private sendConnectMessage() {
     this.send({
-      appId: 1,
+      appId: 0,
       uid: this.userId,
       token: this.token,
       messageType: 0,
@@ -605,7 +655,7 @@ class WebSocketClient {
   // 发送断连消息
   private sendDisconnectMessage() {
     this.send({
-      appId: 1,
+      appId: 0,
       uid: this.userId,
       token: this.token,
       messageType: 1,
@@ -618,7 +668,7 @@ class WebSocketClient {
   // 发送心跳
   private sendHeartbeat() {
     this.send({
-      appId: 1,
+      appId: 0,
       uid: this.userId,
       token: this.token,
       messageType: 2,
@@ -646,7 +696,7 @@ class WebSocketClient {
   // 聊天室操作
   joinChatRoom(roomId: number) {
     this.send({
-      appId: 2,
+      appId: 1,
       uid: this.userId,
       token: this.token,
       messageType: 0,
@@ -658,7 +708,7 @@ class WebSocketClient {
 
   sendChatMessage(roomId: number, content: string) {
     this.send({
-      appId: 2,
+      appId: 1,
       uid: this.userId,
       token: this.token,
       messageType: 1,
@@ -670,7 +720,7 @@ class WebSocketClient {
 
   leaveChatRoom(roomId: number) {
     this.send({
-      appId: 2,
+      appId: 1,
       uid: this.userId,
       token: this.token,
       messageType: 2,
@@ -684,10 +734,10 @@ class WebSocketClient {
   private handleMessage(message: CompleteMessage) {
     console.log('收到消息:', message);
 
-    if (message.appId === 1) {
+    if (message.appId === 0) {
       // 连接管理消息
       this.emit('connection-message', message);
-    } else if (message.appId === 2) {
+    } else if (message.appId === 1) {
       // 聊天室消息
       if (message.messageType === 1) {
         // 聊天消息

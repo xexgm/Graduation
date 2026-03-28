@@ -105,5 +105,14 @@ public class ChatRoomService {
         qw.ne("status", ChatRoomStatusEnum.DELETED);
         return chatRoomMapper.selectList(qw);
     }
+
+    public int getChatRoomUserCount(Long roomId) {
+        if (roomId == null) {
+            throw new IllegalArgumentException("roomId不能为空");
+        }
+        // 调用Netty模块的本地缓存获取人数
+        java.util.Set<Long> userSet = com.gm.graduation.netty.cache.UserChatRoomManager.getChatRoomUserSet(roomId);
+        return userSet == null ? 0 : userSet.size();
+    }
 }
 
