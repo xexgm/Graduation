@@ -41,9 +41,6 @@ public class ChatRoomService {
 
     @Transactional(rollbackFor = Exception.class)
     public ChatRoom create(Long operatorUserId, String roomName, String description, ChatRoomTypeEnum roomType) throws Exception {
-        if (!isAdmin(operatorUserId)) {
-            throw new IllegalAccessException("仅管理员可操作");
-        }
         if (roomName == null || roomName.trim().isEmpty()) {
             throw new IllegalArgumentException("聊天室名称不能为空");
         }
@@ -63,11 +60,16 @@ public class ChatRoomService {
 
     @Transactional(rollbackFor = Exception.class)
     public void offline(Long operatorUserId, Long roomId) throws Exception {
-        if (!isAdmin(operatorUserId)) {
-            throw new IllegalAccessException("仅管理员可操作");
-        }
         if (roomId == null) {
             throw new IllegalArgumentException("roomId不能为空");
+        }
+        
+        ChatRoom existingRoom = chatRoomMapper.selectById(roomId);
+        if (existingRoom == null) {
+            throw new IllegalArgumentException("聊天室不存在");
+        }
+        if (!existingRoom.getOwnerId().equals(operatorUserId)) {
+            throw new IllegalAccessException("仅聊天室创建者可操作");
         }
 
         ChatRoom update = new ChatRoom();
@@ -75,18 +77,23 @@ public class ChatRoomService {
         update.setStatus(ChatRoomStatusEnum.DISBANDED);
         int cnt = chatRoomMapper.updateById(update);
         if (cnt <= 0) {
-            throw new IllegalStateException("聊天室不存在或更新失败");
+            throw new IllegalStateException("聊天室更新失败");
         }
         log.info("聊天室下线成功: roomId={}, operator={}", roomId, operatorUserId);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long operatorUserId, Long roomId) throws Exception {
-        if (!isAdmin(operatorUserId)) {
-            throw new IllegalAccessException("仅管理员可操作");
-        }
         if (roomId == null) {
             throw new IllegalArgumentException("roomId不能为空");
+        }
+        
+        ChatRoom existingRoom = chatRoomMapper.selectById(roomId);
+        if (existingRoom == null) {
+            throw new IllegalArgumentException("聊天室不存在");
+        }
+        if (!existingRoom.getOwnerId().equals(operatorUserId)) {
+            throw new IllegalAccessException("仅聊天室创建者可操作");
         }
 
         ChatRoom update = new ChatRoom();
@@ -94,7 +101,7 @@ public class ChatRoomService {
         update.setStatus(ChatRoomStatusEnum.DELETED);
         int cnt = chatRoomMapper.updateById(update);
         if (cnt <= 0) {
-            throw new IllegalStateException("聊天室不存在或更新失败");
+            throw new IllegalStateException("聊天室更新失败");
         }
         log.info("聊天室删除成功(软删): roomId={}, operator={}", roomId, operatorUserId);
     }

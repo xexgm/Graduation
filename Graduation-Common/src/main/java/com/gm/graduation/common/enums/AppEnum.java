@@ -13,7 +13,8 @@ public enum AppEnum {
     /** 基础能力 **/
     LINK(0),    // 连接中台业务，管理连接，心跳，等
     /** 以下为IM业务 **/
-    CHAT_ROOM(1);
+    CHAT_ROOM(1),
+    PRIVATE_CHAT(2);
 
     Integer app;
 

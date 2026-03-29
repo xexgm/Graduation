@@ -237,6 +237,270 @@ interface ChangePasswordRequest {
 
 ---
 
+### 👥 好友管理接口
+
+#### 1.7 添加好友
+```http
+POST /friend/add
+Authorization: Bearer {token}
+```
+
+**请求参数:**
+- `friendId` (Long) - 好友用户ID
+- `userId` (Long) - 当前用户ID (可以由拦截器自动注入)
+
+**请求示例 (Query):**
+```
+POST /friend/add?userId=1&friendId=2
+```
+
+**响应:**
+```typescript
+// 成功: code=200, message="添加成功"
+// 失败: code=500, message="错误信息"
+```
+
+---
+
+#### 1.8 删除好友
+```http
+DELETE /friend/remove/{friendId}
+Authorization: Bearer {token}
+```
+
+**请求参数:**
+- `friendId` (Long, 路径参数) - 要删除的好友ID
+- `userId` (Long) - 当前用户ID (可以由拦截器自动注入)
+
+**请求示例:**
+```
+DELETE /friend/remove/2?userId=1
+```
+
+**响应:**
+```typescript
+// 成功: code=200, message="删除成功"
+// 失败: code=500, message="错误信息"
+```
+
+---
+
+#### 1.9 获取好友列表
+```http
+GET /friend/list
+Authorization: Bearer {token}
+```
+
+**请求参数:**
+- `userId` (Long) - 当前用户ID (可以由拦截器自动注入)
+
+**响应:**
+```typescript
+interface FriendListResponse {
+  code: number;
+  message: string;
+  data: FriendResponse[];
+}
+
+interface FriendResponse {
+  userId: number;         // 好友用户ID
+  username: string;       // 用户名
+  nickname: string;       // 昵称
+  avatarUrl?: string;     // 头像
+  signature?: string;     // 个性签名
+  status: number;         // 用户状态: 0=离线, 1=在线
+  relationStatus: number; // 好友关系状态: 0=正常, 1=拉黑
+}
+```
+
+---
+
+### 🏠 聊天室管理接口
+
+#### 1.10 创建聊天室
+```http
+POST /chatroom/create
+Authorization: Bearer {token}
+```
+
+**请求体:**
+```typescript
+interface CreateChatRoomRequest {
+  roomName: string;    // 聊天室名称 (必填)
+  description?: string;// 聊天室描述
+  roomType?: string;   // 聊天室类型: PUBLIC_ROOM 或 PRIVATE_ROOM (默认 PUBLIC_ROOM)
+}
+```
+
+**响应:**
+```typescript
+interface ChatRoomResponse {
+  roomId: number;
+  roomName: string;
+  description: string;
+  ownerId: number;
+  roomType: string;
+  status: string;
+  createTime: string;
+}
+
+// 成功: code=200, message="创建成功", data返回聊天室信息
+// 失败: code=400, message="创建失败原因"
+```
+
+---
+
+#### 1.11 获取所有活跃聊天室列表
+```http
+GET /chatroom/list
+Authorization: Bearer {token}
+```
+
+**响应:**
+```typescript
+// 成功: code=200, message="查询成功", data返回 ChatRoomResponse 数组
+interface ChatRoomListResponse {
+  code: number;
+  message: string;
+  data: ChatRoomResponse[];
+}
+```
+
+---
+
+#### 1.12 下线聊天室
+```http
+POST /chatroom/{roomId}/offline
+Authorization: Bearer {token}
+```
+
+**说明:**
+仅聊天室的**创建者**有权限执行此操作。
+
+**响应:**
+```typescript
+// 成功: code=200, message="下线成功"
+// 失败: code=403, message="仅聊天室创建者可操作"
+```
+
+---
+
+#### 1.13 删除聊天室
+```http
+DELETE /chatroom/{roomId}
+Authorization: Bearer {token}
+```
+
+**说明:**
+仅聊天室的**创建者**有权限执行此操作，此操作为软删除。
+
+**响应:**
+```typescript
+// 成功: code=200, message="删除成功"
+// 失败: code=403, message="仅聊天室创建者可操作"
+```
+
+---
+
+#### 1.14 获取聊天室在线人数
+```http
+GET /chatroom/{roomId}/count
+Authorization: Bearer {token}
+```
+
+**响应:**
+```typescript
+// 成功: code=200, message="查询成功", data返回在线人数(number)
+```
+
+---
+
+### 💬 消息历史记录接口
+
+#### 1.15 获取私聊历史记录
+```http
+GET /message/private/history
+Authorization: Bearer {token}
+```
+
+**请求参数:**
+- `userId` (Long) - 当前用户ID
+- `friendId` (Long) - 好友用户ID
+- `current` (int, 默认1) - 当前页码
+- `size` (int, 默认20) - 每页数量
+
+**请求示例:**
+```
+GET /message/private/history?userId=1&friendId=2&current=1&size=20
+```
+
+**响应:**
+```typescript
+interface PrivateMessageHistoryResponse {
+  code: number;
+  message: string;
+  data: {
+    records: PrivateMessage[];
+    total: number;
+    size: number;
+    current: number;
+    pages: number;
+  }
+}
+
+interface PrivateMessage {
+  msgId: number;       // 消息ID
+  senderId: number;    // 发送者ID
+  receiverId: number;  // 接收者ID
+  content: string;     // 消息内容
+  isRead: number;      // 是否已读: 0=未读, 1=已读
+  createTime: string;  // 创建时间
+}
+```
+
+---
+
+#### 1.16 获取群聊历史记录
+```http
+GET /message/chatroom/history
+Authorization: Bearer {token}
+```
+
+**请求参数:**
+- `roomId` (Long) - 聊天室ID
+- `current` (int, 默认1) - 当前页码
+- `size` (int, 默认20) - 每页数量
+
+**请求示例:**
+```
+GET /message/chatroom/history?roomId=1001&current=1&size=20
+```
+
+**响应:**
+```typescript
+interface ChatRoomMessageHistoryResponse {
+  code: number;
+  message: string;
+  data: {
+    records: ChatRoomMessage[];
+    total: number;
+    size: number;
+    current: number;
+    pages: number;
+  }
+}
+
+interface ChatRoomMessage {
+  msgId: number;       // 消息ID
+  roomId: number;      // 聊天室ID
+  senderId: number;    // 发送者ID
+  content: string;     // 消息内容
+  createTime: string;  // 创建时间
+}
+```
+
+---
+
 ## 2. Netty WebSocket 接口
 
 ### 🌐 连接信息
@@ -438,6 +702,26 @@ const leaveRoomMessage: CompleteMessage = {
   "content": "成功退出聊天室: 1001",
   "timeStamp": 1633536000000
 }
+```
+
+---
+
+### 👤 私聊管理 (appId=2)
+
+#### 2.7 发送私聊消息 (messageType=1)
+```typescript
+const privateMessage: CompleteMessage = {
+  appId: 2,
+  uid: 123,               // 发送者ID
+  token: "eyJhbGciOiJIUzUxMiJ9...",
+  messageType: 1,         // 私聊消息类型
+  toId: 456,              // 接收者(好友)的userID
+  content: "你好，最近怎么样？",
+  timeStamp: Date.now()
+};
+
+// 目标用户(如果在线)将会收到格式相同的推送消息
+// 消息会由服务器自动持久化，如果对方不在线也会保存为离线未读消息
 ```
 
 ---
@@ -730,6 +1014,19 @@ class WebSocketClient {
     });
   }
 
+  // 私聊操作
+  sendPrivateMessage(friendId: number, content: string) {
+    this.send({
+      appId: 2,
+      uid: this.userId,
+      token: this.token,
+      messageType: 1, // 可自定义私聊消息的具体type
+      toId: friendId,
+      content,
+      timeStamp: Date.now()
+    });
+  }
+
   // 处理收到的消息
   private handleMessage(message: CompleteMessage) {
     console.log('收到消息:', message);
@@ -746,6 +1043,9 @@ class WebSocketClient {
         // 聊天室系统消息
         this.emit('room-message', message);
       }
+    } else if (message.appId === 2) {
+      // 收到私聊消息
+      this.emit('private-message', message);
     }
 
     // 触发通用消息事件

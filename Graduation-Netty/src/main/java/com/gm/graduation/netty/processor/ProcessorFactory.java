@@ -13,6 +13,7 @@ public class ProcessorFactory {
         return switch (app) {
             case LINK -> LinkProcessor.getInstance();
             case CHAT_ROOM -> ChatRoomProcessor.getInstance();
+            case PRIVATE_CHAT -> PrivateChatProcessor.getInstance();
             default -> throw new IllegalArgumentException("不支持的消息类型");
         };
     }
