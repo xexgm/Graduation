@@ -45,6 +45,12 @@ public class ChatRoomProcessor extends AbstractMessageProcessor<CompleteMessage>
             case 2:
                 leaveChatRoom(ctx, msg);
                 break;
+            case 3:
+                sendChatRoomMessage(ctx, msg);
+                break;
+            case 4:
+                sendChatRoomMessage(ctx, msg);
+                break;
             default:
                 log.warn("未知的聊天室消息类型: {}, userId: {}", messageType, msg.getUid());
         }
@@ -84,7 +90,7 @@ public class ChatRoomProcessor extends AbstractMessageProcessor<CompleteMessage>
         }
     }
 
-    /** messageType为1，发送聊天室消息 **/
+    /** messageType为1，发送聊天室文本消息；messageType为3，发送聊天室文件消息；messageType为4，发送聊天室语音消息 **/
     private void sendChatRoomMessage(ChannelHandlerContext ctx, CompleteMessage msg) {
         Long senderId = msg.getUid();
         Long roomId = msg.getToId(); // 使用toId作为聊天室ID
@@ -111,7 +117,7 @@ public class ChatRoomProcessor extends AbstractMessageProcessor<CompleteMessage>
         CompleteMessage broadcastMsg = new CompleteMessage();
         broadcastMsg.setAppId(msg.getAppId());
         broadcastMsg.setUid(senderId);
-        broadcastMsg.setMessageType(1);
+        broadcastMsg.setMessageType(msg.getMessageType());
         broadcastMsg.setToId(roomId);
         broadcastMsg.setContent(content);
         broadcastMsg.setTimeStamp(System.currentTimeMillis());
