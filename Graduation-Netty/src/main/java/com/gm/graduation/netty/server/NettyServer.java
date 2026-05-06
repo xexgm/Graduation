@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.gm.graduation.common.config.LifeCycle;
 import com.gm.graduation.common.utils.NettyConfig;
 import com.gm.graduation.common.utils.SystemUtil;
+import com.gm.graduation.common.utils.WssConfig;
 import com.gm.graduation.netty.handler.BusinessHandler;
 import com.gm.graduation.netty.handler.MessageToWebSocketFrameEncoder;
 import com.gm.graduation.netty.handler.WebSocketFrameToMessageDecoder;
@@ -20,6 +21,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,6 +68,14 @@ public class NettyServer implements LifeCycle {
     @Override
     public void start() {
         init();
+        final SslContext sslContext;
+        try {
+            sslContext = WssConfig.enabled() ? NettySslContextFactory.buildServerSslContext() : null;
+        } catch (Exception e) {
+            shutdown();
+            throw new IllegalStateException("Netty WSS SSL context 初始化失败", e);
+        }
+
         serverBootstrap
             .group(bossEventLoopGroup, workerEventLoopGroup)
             // 设置服务端 通信类型（基于TCP）
@@ -75,6 +85,9 @@ public class NettyServer implements LifeCycle {
                 // 添加处理的handler，通常包括 消息编解码、业务处理、也可以有日志、权限、过滤
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
+                    if (sslContext != null) {
+                        ch.pipeline().addLast(sslContext.newHandler(ch.alloc()));
+                    }
                     ch.pipeline()
                         // http 编解码器
                         .addLast(new HttpServerCodec())
@@ -106,7 +119,8 @@ public class NettyServer implements LifeCycle {
             ChannelFuture future = serverBootstrap.bind(LISTENING_PORT).sync();
             // 启动标志
             this.started.compareAndSet(false, true);
-            log.info("[NettyServer started] 初始化完成，监听端口: {}", LISTENING_PORT);
+            log.info("[NettyServer started] 初始化完成，监听端口: {}, protocol: {}",
+                LISTENING_PORT, WssConfig.enabled() ? "wss" : "ws");
             // 等待服务端口关闭
             future.channel().closeFuture().addListener(f -> {
                 this.shutdown();

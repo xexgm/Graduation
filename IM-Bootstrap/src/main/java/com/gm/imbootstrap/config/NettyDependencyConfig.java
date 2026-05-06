@@ -1,6 +1,8 @@
 package com.gm.imbootstrap.config;
 
+import com.gm.graduation.common.api.IChatRoomMessageService;
 import com.gm.graduation.common.api.IPrivateMessageService;
+import com.gm.graduation.netty.processor.ChatRoomProcessor;
 import com.gm.graduation.netty.processor.PrivateChatProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -13,8 +15,12 @@ public class NettyDependencyConfig {
     @Autowired
     private IPrivateMessageService privateMessageService;
 
+    @Autowired
+    private IChatRoomMessageService chatRoomMessageService;
+
     @PostConstruct
     public void init() {
         PrivateChatProcessor.setPrivateMessageService(privateMessageService);
+        ChatRoomProcessor.setChatRoomMessageService(chatRoomMessageService);
     }
 }

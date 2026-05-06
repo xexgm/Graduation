@@ -1,6 +1,5 @@
 package com.gm.imbootstrap.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gm.graduation.common.domain.PrivateMessage;
 import com.gm.imbootstrap.mapper.PrivateMessageMapper;
@@ -26,6 +25,9 @@ class PrivateMessageServiceTest {
     @Mock
     private PrivateMessageMapper privateMessageMapper;
 
+    @Mock
+    private MessageCryptoService messageCryptoService;
+
     @Test
     void saveMessage_ValidMessage_Success() {
         // Arrange
@@ -34,6 +36,7 @@ class PrivateMessageServiceTest {
         message.setReceiverId(2L);
         message.setContent("Hello");
         
+        when(messageCryptoService.encrypt("Hello", "private:1:2")).thenReturn("encrypted-content");
         when(privateMessageMapper.insert(any(PrivateMessage.class))).thenReturn(1);
 
         // Act
@@ -41,6 +44,7 @@ class PrivateMessageServiceTest {
 
         // Assert
         verify(privateMessageMapper, times(1)).insert(message);
+        assertEquals("encrypted-content", message.getContent());
     }
 
     @Test
@@ -64,7 +68,8 @@ class PrivateMessageServiceTest {
         mockPage.setRecords(Collections.singletonList(message));
         mockPage.setTotal(1);
 
-        when(privateMessageMapper.selectPage(any(Page.class), any(QueryWrapper.class)))
+        when(messageCryptoService.decrypt("History msg", "private:1:2")).thenReturn("History msg");
+        when(privateMessageMapper.selectPage(any(), any()))
                 .thenReturn(mockPage);
 
         // Act
@@ -76,6 +81,6 @@ class PrivateMessageServiceTest {
         assertEquals(1, result.getRecords().size());
         assertEquals("History msg", result.getRecords().get(0).getContent());
         
-        verify(privateMessageMapper, times(1)).selectPage(any(Page.class), any(QueryWrapper.class));
+        verify(privateMessageMapper, times(1)).selectPage(any(), any());
     }
 }

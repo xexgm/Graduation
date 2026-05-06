@@ -16,9 +16,14 @@ public class PrivateMessageService implements IPrivateMessageService {
     @Autowired
     private PrivateMessageMapper privateMessageMapper;
 
+    @Autowired
+    private MessageCryptoService messageCryptoService;
+
     @Override
     public void saveMessage(PrivateMessage message) {
         if (message != null) {
+            String aad = buildAad(message.getSenderId(), message.getReceiverId());
+            message.setContent(messageCryptoService.encrypt(message.getContent(), aad));
             privateMessageMapper.insert(message);
         }
     }
@@ -37,6 +42,15 @@ public class PrivateMessageService implements IPrivateMessageService {
         );
         qw.orderByDesc("create_time");
 
-        return privateMessageMapper.selectPage(page, qw);
+        Page<PrivateMessage> result = privateMessageMapper.selectPage(page, qw);
+        result.getRecords().forEach(message -> {
+            String aad = buildAad(message.getSenderId(), message.getReceiverId());
+            message.setContent(messageCryptoService.decrypt(message.getContent(), aad));
+        });
+        return result;
+    }
+
+    private String buildAad(Long senderId, Long receiverId) {
+        return "private:" + senderId + ":" + receiverId;
     }
 }

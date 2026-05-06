@@ -1,5 +1,7 @@
 package com.gm.graduation.netty.processor;
 
+import com.gm.graduation.common.api.IChatRoomMessageService;
+import com.gm.graduation.common.domain.ChatRoomMessage;
 import com.gm.graduation.common.domain.CompleteMessage;
 import com.gm.graduation.netty.cache.UserChatRoomManager;
 import com.gm.graduation.netty.cache.UserLinkManager;
@@ -7,6 +9,7 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
+import java.time.LocalDateTime;
 
 /**
  * @author: xexgm
@@ -15,6 +18,12 @@ import java.util.Set;
  */
 @Slf4j
 public class ChatRoomProcessor extends AbstractMessageProcessor<CompleteMessage>{
+
+    private static IChatRoomMessageService chatRoomMessageService;
+
+    public static void setChatRoomMessageService(IChatRoomMessageService service) {
+        chatRoomMessageService = service;
+    }
 
     private ChatRoomProcessor(){}
 
@@ -96,6 +105,8 @@ public class ChatRoomProcessor extends AbstractMessageProcessor<CompleteMessage>
 
         log.info("向聊天室 {} 中的 {} 个用户广播消息，发送者: {}", roomId, userSet.size(), senderId);
 
+        saveChatRoomMessage(senderId, roomId, content);
+
         // 构建要广播的消息
         CompleteMessage broadcastMsg = new CompleteMessage();
         broadcastMsg.setAppId(msg.getAppId());
@@ -129,6 +140,25 @@ public class ChatRoomProcessor extends AbstractMessageProcessor<CompleteMessage>
         }
 
         log.info("聊天室 {} 消息广播完成，成功发送给 {} 个用户", roomId, successCount);
+    }
+
+    private void saveChatRoomMessage(Long senderId, Long roomId, String content) {
+        if (chatRoomMessageService == null) {
+            log.warn("ChatRoomMessageService 未注入，聊天室消息无法落库");
+            return;
+        }
+
+        ChatRoomMessage chatRoomMessage = new ChatRoomMessage();
+        chatRoomMessage.setRoomId(roomId);
+        chatRoomMessage.setSenderId(senderId);
+        chatRoomMessage.setContent(content);
+        chatRoomMessage.setCreateTime(LocalDateTime.now());
+
+        try {
+            chatRoomMessageService.saveMessage(chatRoomMessage);
+        } catch (Exception e) {
+            log.error("聊天室消息落库失败", e);
+        }
     }
 
     /** messageType为2，退出聊天室 **/

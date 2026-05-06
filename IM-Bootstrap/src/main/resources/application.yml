@@ -55,6 +55,12 @@ app:
   security:
     password-strength: 8 # 最小密码长度
 
+# 文件上传配置
+file:
+  upload:
+    base-dir: UserUploadFiles
+    max-size-mb: 10
+
 # 日志配置
 logging:
   level:
